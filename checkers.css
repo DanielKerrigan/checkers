@@ -1,0 +1,35 @@
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+#container{
+  margin: 0 auto;
+  width: 400px;
+}
+.square{
+  width: 50px;
+  height: 50px;
+  display: inline-block;
+  z-index: 1;
+}
+.piece{
+  width: 40px;
+  height: 40px;
+  border-radius: 100%;
+  background: gray;
+  margin: 5px auto;
+  z-index: 10;
+}
+.column{
+  display: block;
+}
+.king{
+  width: 30px;
+  height: 30px;
+  border-radius: 100%;
+  border: 2px solid #FFD700;
+  position: absolute;
+  margin: 5px 5px;
+  z-index: 15;
+}
