@@ -1,12 +1,15 @@
 var pieceSelected = null;
 var squareSelected = null;
+var canJump = false;
+var jumpSquares = new Array();
+var moveSquares = new Array();
 var parent;
 var turn = 1;
 var blackPiecesCount = 12;
 var whitePiecesCount = 12;
 window.onload = function(){
   var container=document.getElementById("container");
-  var rBtn = document.getElementById("resetButton");
+//  var rBtn = document.getElementById("resetButton");
   createBoard();
 }
 function createBoard(){
@@ -43,75 +46,147 @@ function createBoard(){
   }
   var allSquares=document.getElementsByClassName("square");
   for(var i=0; i<allSquares.length; ++i){
-    allSquares[i].addEventListener("click", squareClicked);
+    if(allSquares[i].style.background === "rgb(152, 73, 40)"){
+      allSquares[i].addEventListener("click", squareClicked);
+    }
   }
 }
 function pieceClicked(){
-  var pieceColor = this.style.background;
-  for(var i of jumpAvailable()){
-    if(this === i){
-
+  var piecesThatCanJump = jumpAvailable();
+  var piecesThatCanMove = moveAvailable();
+  canJump = false;
+  if(piecesThatCanJump.length === 0){
+    if(piecesThatCanMove.indexOf(this) !== -1){
+      highlightPiece(this);
     }
   }
-  if(turn === 1 && pieceColor === "black" || turn === 2 && pieceColor === "white")
-    if(pieceSelected === null){
-      this.style.border = "2px solid blue";
-      pieceSelected = this;
+  else{
+    if(piecesThatCanJump.indexOf(this) !== -1){
+      highlightPiece(this);
+      canJump = true;
     }
-    else{
+  }
+
+}
+function highlightPiece(p){
+  var pieceColor = p.style.background;
+  if(turn === 1 && pieceColor === "black" || turn === 2 && pieceColor === "white"){
+    if(pieceSelected === null){
+      p.style.border = "2px solid blue";
+      pieceSelected = p;
+    }
+    else if(pieceSelected !== null){
       pieceSelected.style.border = "0";
-      pieceSelected = this;
+      pieceSelected = p;
       pieceSelected.style.border = "2px solid blue"
     }
+  }
 }
 function jumpAvailable(){
   var allPieces = document.getElementsByClassName("piece");
   var pieces = [];
-  var piecesThatCanJump[];
-  for(var i of allPieces){
-    if(i.style.background === "black" && turn === 2 || i.style.background === "white" && turn === 1){
-      pieces.push(i);
+  var piecesThatCanJump = [];
+  for(var i = 0; i<allPieces.length; ++i){
+    if(allPieces[i].style.background === "black" && turn === 1 || allPieces[i].style.background === "white" && turn === 2){
+      pieces.push(allPieces[i]);
     }
   }
-  for(var j of pieces){
-    var r = getRow(j.parentNode.id);
-    var c = getCol(j.parentNode.id);
-    if(isKing(j)){
-      if(getSquare(r+2, c+2).childNodes.length === 0 && getSquare(r+1, c+1).firstChild !== null && getSquare(r+1, c+1).firstChild.style.background !== j.style.background){
-        piecesThatCanJump.push(j);
+  for(var j = 0; j<pieces.length; ++j){
+    var r = getRow(pieces[j].parentNode.id);
+    var c = getCol(pieces[j].parentNode.id);
+    jumpSquares[r+"-"+c] = new Array();
+    if(turn === 2 || isKing(pieces[j])){
+      if(checkJump(getSquare(r-2, c+2), getSquare(r-1, c+1), pieces[j])){
+        piecesThatCanJump.push(pieces[j]);
+        jumpSquares[r+"-"+c].push(getSquare(r-2, c+2));
       }
-      if(getSquare(r+2, c-2).childNodes.length === 0 && getSquare(r+1, c+1).firstChild !== null && getSquare(r+1, c-1).firstChild.style.background !== j.style.background){
-        piecesThatCanJump.push(j);
-      }
-      if(getSquare(r-2, c+2).childNodes.length === 0 && getSquare(r+1, c+1).firstChild !== null && getSquare(r-1, c+1).firstChild.style.background !== j.style.background){
-        piecesThatCanJump.push(j);
-      }
-      if(getSquare(r-2, c-2).childNodes.length === 0 && getSquare(r+1, c+1).firstChild !== null && getSquare(r-1, c-1).firstChild.style.background !== j.style.background){
-        piecesThatCanJump.push(j);
+      if(checkJump(getSquare(r-2, c-2), getSquare(r-1, c-1), pieces[j])){
+        piecesThatCanJump.push(pieces[j]);
+        jumpSquares[r+"-"+c].push(getSquare(r-2, c-2));
       }
     }
-    else if(turn === 1){
-      if(getSquare(r-2, c+2).childNodes.length === 0 && getSquare(r+1, c+1).firstChild !== null && getSquare(r-1, c+1).firstChild.style.background !== j.style.background){
-        piecesThatCanJump.push(j);
+    else if(turn === 1 || isKing(j)){
+      if(checkJump(getSquare(r+2, c+2), getSquare(r+1, c+1), pieces[j])){
+        piecesThatCanJump.push(pieces[j]);
+        jumpSquares[r+"-"+c].push(getSquare(r+2, c+2));
       }
-      if(getSquare(r-2, c-2).childNodes.length === 0 && getSquare(r+1, c+1).firstChild !== null && getSquare(r-1, c-1).firstChild.style.background !== j.style.background){
-        piecesThatCanJump.push(j);
-      }
-    }
-    else if(turn === 2){
-      if(getSquare(r+2, c+2).childNodes.length === 0 && getSquare(r+1, c+1).firstChild !== null && getSquare(r+1, c+1).firstChild.style.background !== j.style.background){
-        piecesThatCanJump.push(j);
-      }
-      if(getSquare(r+2, c-2).childNodes.length === 0 && getSquare(r+1, c+1).firstChild !== null && getSquare(r+1, c-1).firstChild.style.background !== j.style.background){
-        piecesThatCanJump.push(j);
+      if(checkJump(getSquare(r+2, c-2), getSquare(r+1, c-1), pieces[j])){
+        piecesThatCanJump.push(pieces[j]);
+        jumpSquares[r+"-"+c].push(getSquare(r+2, c-2));
       }
     }
   }
   return piecesThatCanJump;
 }
+function checkJump(s1, s2, k){
+  if(s1 !== null && s1.childNodes.length === 0 && s2.firstChild !== null && s2.firstChild.style.background !== k.style.background){
+    return true;
+  }
+}
+function moveAvailable(){
+  var allPieces = document.getElementsByClassName("piece");
+  var pieces = [];
+  var piecesThatCanMove = [];
+  for(var i = 0; i<allPieces.length; ++i){
+    if(allPieces[i].style.background === "black" && turn === 1 || allPieces[i].style.background === "white" && turn === 2){
+      pieces.push(allPieces[i]);
+    }
+  }
+  for(var j of pieces){
+    var r = getRow(j.parentNode.id);
+    var c = getCol(j.parentNode.id);
+    moveSquares[r+"-"+c] = new Array();
+    if(turn === 2 || isKing(j)){
+      if(checkMove(getSquare(r-1, c+1))){
+        piecesThatCanMove.push(j);
+        moveSquares[r+"-"+c].push(getSquare(r-1, c+1));
+      }
+      if(checkMove(getSquare(r-1, c-1))){
+        piecesThatCanMove.push(j);
+        moveSquares[r+"-"+c].push(getSquare(r-1, c-1));
+      }
+    }
+    else if(turn === 1 || isKing(j)){
+      if(checkMove(getSquare(r+1, c+1))){
+        piecesThatCanMove.push(j);
+        moveSquares[r+"-"+c].push(getSquare(r+1, c+1));
+      }
+      if(checkMove(getSquare(r+1, c-1))){
+        piecesThatCanMove.push(j);
+        moveSquares[r+"-"+c].push(getSquare(r+1, c-1));
+      }
+    }
+  }
+  return piecesThatCanMove;
+}
+function checkMove(s){
+  if(s !== null && s.childNodes.length === 0){
+    return true;
+  }
+}
 function squareClicked(){
-  if(pieceSelected !== null){
-    squareSelected = this;
+  if(pieceSelected !== null && this !== pieceSelected.parentNode && this.childNodes.length === 0){
+    if(canJump){
+      if(jumpSquares[pieceSelected.parentNode.id].indexOf(this) !== -1){
+        squareSelected = this;
+        var r1 = getRow(pieceSelected.parentNode.id);
+        var r2 = getRow(squareSelected.id);
+
+        var c1 = getCol(pieceSelected.parentNode.id);
+        var c2 = getCol(squareSelected.id);
+
+        var r = (r2 - r1)/2 + r1;
+        var c = (c2 - c1)/2 + c1;
+        var id = r+"-"+c;
+        jumpPiece(id);
+      }
+    }
+    else{
+      if(moveSquares[pieceSelected.parentNode.id].indexOf(this) !== -1){
+        squareSelected = this;
+        makeMove();
+      }
+    }
   }
 }
 function getRow(sqID){
@@ -128,6 +203,7 @@ function getSquare(row, col){
   return document.getElementById(row+"-"+col);
 }
 function makeMove(){
+  var parent = pieceSelected.parentNode;
   pieceSelected.style.border = "0";
   parent.removeChild(pieceSelected);
   squareSelected.appendChild(pieceSelected);
@@ -144,34 +220,39 @@ function makeMove(){
     pieceSelected.appendChild(king);
   }
   pieceSelected = null;
-  checkGameWon();
+  if(moveAvailable().length === 0 && jumpAvailable().length === 0){
+    if(turn === 1){
+      gameOver("Black");
+    }
+    else{
+      gameOver("White");
+    }
+  }
 }
 function jumpPiece(id){
   var jumpedSquare = document.getElementById(id);
   var jumpedPiece = jumpedSquare.firstChild;
-  if(jumpedPiece !== null && jumpedPiece.style.background !== pieceSelected.style.background){
-    jumpedSquare.removeChild(jumpedPiece);
-    if(pieceSelected.style.background === "white"){
-      blackPiecesCount--;
-    }
-    else{
-      whitePiecesCount--;
+  jumpedSquare.removeChild(jumpedPiece);
+  makeMove();
+  if(pieceSelected.style.background === "white"){
+    blackPiecesCount--;
+    if(blackPiecesCount === 0){
+      gameOver("White");
     }
   }
-  makeMove();
+  else{
+    whitePiecesCount--;
+    if(whitePiecesCount === 0){
+      gameOver("Black");
+    }
+  }
 }
 function isKing(p){
   return p.childNodes.length !== 0;
 }
-function checkGameWon(){
-  if(blackPiecesCount === 0){
-    alert("White wins!");
-    newGame();
-  }
-  else if(whitePiecesCount === 0){
-    alert("Black wins!");
-    newGame();
-  }
+function gameOver(winner){
+  alert(winner+" wins!");
+  newGame();
 }
 function newGame(){
   while(container.firstChild){
