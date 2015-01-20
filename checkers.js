@@ -9,7 +9,6 @@ var blackPiecesCount = 12;
 var whitePiecesCount = 12;
 window.onload = function(){
   var container=document.getElementById("container");
-//  var rBtn = document.getElementById("resetButton");
   createBoard();
 }
 function createBoard(){
@@ -66,7 +65,6 @@ function pieceClicked(){
       canJump = true;
     }
   }
-
 }
 function highlightPiece(p){
   var pieceColor = p.style.background;
@@ -86,6 +84,7 @@ function jumpAvailable(){
   var allPieces = document.getElementsByClassName("piece");
   var pieces = [];
   var piecesThatCanJump = [];
+  jumpSquares = [];
   for(var i = 0; i<allPieces.length; ++i){
     if(allPieces[i].style.background === "black" && turn === 1 || allPieces[i].style.background === "white" && turn === 2){
       pieces.push(allPieces[i]);
@@ -95,7 +94,25 @@ function jumpAvailable(){
     var r = getRow(pieces[j].parentNode.id);
     var c = getCol(pieces[j].parentNode.id);
     jumpSquares[r+"-"+c] = new Array();
-    if(turn === 2 || isKing(pieces[j])){
+    if(isKing(pieces[j])){
+      if(checkJump(getSquare(r-2, c+2), getSquare(r-1, c+1), pieces[j])){
+        piecesThatCanJump.push(pieces[j]);
+        jumpSquares[r+"-"+c].push(getSquare(r-2, c+2));
+      }
+      if(checkJump(getSquare(r-2, c-2), getSquare(r-1, c-1), pieces[j])){
+        piecesThatCanJump.push(pieces[j]);
+        jumpSquares[r+"-"+c].push(getSquare(r-2, c-2));
+      }
+      if(checkJump(getSquare(r+2, c+2), getSquare(r+1, c+1), pieces[j])){
+        piecesThatCanJump.push(pieces[j]);
+        jumpSquares[r+"-"+c].push(getSquare(r+2, c+2));
+      }
+      if(checkJump(getSquare(r+2, c-2), getSquare(r+1, c-1), pieces[j])){
+        piecesThatCanJump.push(pieces[j]);
+        jumpSquares[r+"-"+c].push(getSquare(r+2, c-2));
+      }
+    }
+    else if(turn === 2){
       if(checkJump(getSquare(r-2, c+2), getSquare(r-1, c+1), pieces[j])){
         piecesThatCanJump.push(pieces[j]);
         jumpSquares[r+"-"+c].push(getSquare(r-2, c+2));
@@ -105,7 +122,7 @@ function jumpAvailable(){
         jumpSquares[r+"-"+c].push(getSquare(r-2, c-2));
       }
     }
-    else if(turn === 1 || isKing(j)){
+    else if(turn === 1){
       if(checkJump(getSquare(r+2, c+2), getSquare(r+1, c+1), pieces[j])){
         piecesThatCanJump.push(pieces[j]);
         jumpSquares[r+"-"+c].push(getSquare(r+2, c+2));
@@ -127,6 +144,7 @@ function moveAvailable(){
   var allPieces = document.getElementsByClassName("piece");
   var pieces = [];
   var piecesThatCanMove = [];
+  moveSquares = [];
   for(var i = 0; i<allPieces.length; ++i){
     if(allPieces[i].style.background === "black" && turn === 1 || allPieces[i].style.background === "white" && turn === 2){
       pieces.push(allPieces[i]);
@@ -136,7 +154,25 @@ function moveAvailable(){
     var r = getRow(j.parentNode.id);
     var c = getCol(j.parentNode.id);
     moveSquares[r+"-"+c] = new Array();
-    if(turn === 2 || isKing(j)){
+    if(isKing(j)){
+      if(checkMove(getSquare(r-1, c+1))){
+        piecesThatCanMove.push(j);
+        moveSquares[r+"-"+c].push(getSquare(r-1, c+1));
+      }
+      if(checkMove(getSquare(r-1, c-1))){
+        piecesThatCanMove.push(j);
+        moveSquares[r+"-"+c].push(getSquare(r-1, c-1));
+      }
+      if(checkMove(getSquare(r+1, c+1))){
+        piecesThatCanMove.push(j);
+        moveSquares[r+"-"+c].push(getSquare(r+1, c+1));
+      }
+      if(checkMove(getSquare(r+1, c-1))){
+        piecesThatCanMove.push(j);
+        moveSquares[r+"-"+c].push(getSquare(r+1, c-1));
+      }
+    }
+    else if(turn === 2){
       if(checkMove(getSquare(r-1, c+1))){
         piecesThatCanMove.push(j);
         moveSquares[r+"-"+c].push(getSquare(r-1, c+1));
@@ -146,7 +182,7 @@ function moveAvailable(){
         moveSquares[r+"-"+c].push(getSquare(r-1, c-1));
       }
     }
-    else if(turn === 1 || isKing(j)){
+    else if(turn === 1){
       if(checkMove(getSquare(r+1, c+1))){
         piecesThatCanMove.push(j);
         moveSquares[r+"-"+c].push(getSquare(r+1, c+1));
@@ -232,9 +268,11 @@ function makeMove(){
 function jumpPiece(id){
   var jumpedSquare = document.getElementById(id);
   var jumpedPiece = jumpedSquare.firstChild;
+  var pieceMoved = pieceSelected;
+  var currentTurn = turn;
   jumpedSquare.removeChild(jumpedPiece);
   makeMove();
-  if(pieceSelected.style.background === "white"){
+  if(pieceMoved.style.background === "white"){
     blackPiecesCount--;
     if(blackPiecesCount === 0){
       gameOver("White");
@@ -244,6 +282,19 @@ function jumpPiece(id){
     whitePiecesCount--;
     if(whitePiecesCount === 0){
       gameOver("Black");
+    }
+  }
+  turn = currentTurn;
+  if(jumpAvailable().indexOf(pieceMoved) !== -1){
+    pieceSelected = pieceMoved;
+    pieceSelected.style.border = "2px solid blue";
+  }
+  else{
+    if(turn === 1){
+      turn = 2;
+    }
+    else{
+      turn = 1;
     }
   }
 }
