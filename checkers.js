@@ -243,6 +243,16 @@ function makeMove(){
   pieceSelected.style.border = "0";
   parent.removeChild(pieceSelected);
   squareSelected.appendChild(pieceSelected);
+
+  if(moveAvailable().length === 0 && jumpAvailable().length === 0){
+    if(turn === 1){
+      gameOver("Black");
+    }
+    else{
+      gameOver("White");
+    }
+  }
+
   if(turn === 1){
     turn = 2;
   }else{
@@ -256,14 +266,6 @@ function makeMove(){
     pieceSelected.appendChild(king);
   }
   pieceSelected = null;
-  if(moveAvailable().length === 0 && jumpAvailable().length === 0){
-    if(turn === 1){
-      gameOver("Black");
-    }
-    else{
-      gameOver("White");
-    }
-  }
 }
 function jumpPiece(id){
   var jumpedSquare = document.getElementById(id);
