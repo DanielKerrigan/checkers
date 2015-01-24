@@ -3,6 +3,8 @@ var squareSelected = null;
 var canJump = false;
 var jumpSquares = new Array();
 var moveSquares = new Array();
+var piecesThatCanMove = new Array();
+var piecesThatCanJump = new Array();
 var parent;
 var turn = 1;
 var blackPiecesCount = 12;
@@ -83,7 +85,7 @@ function highlightPiece(p){
 function jumpAvailable(){
   var allPieces = document.getElementsByClassName("piece");
   var pieces = [];
-  var piecesThatCanJump = [];
+  piecesThatCanJump = [];
   jumpSquares = [];
   for(var i = 0; i<allPieces.length; ++i){
     if(allPieces[i].style.background === "black" && turn === 1 || allPieces[i].style.background === "white" && turn === 2){
@@ -95,55 +97,34 @@ function jumpAvailable(){
     var c = getCol(pieces[j].parentNode.id);
     jumpSquares[r+"-"+c] = new Array();
     if(isKing(pieces[j])){
-      if(checkJump(getSquare(r-2, c+2), getSquare(r-1, c+1), pieces[j])){
-        piecesThatCanJump.push(pieces[j]);
-        jumpSquares[r+"-"+c].push(getSquare(r-2, c+2));
-      }
-      if(checkJump(getSquare(r-2, c-2), getSquare(r-1, c-1), pieces[j])){
-        piecesThatCanJump.push(pieces[j]);
-        jumpSquares[r+"-"+c].push(getSquare(r-2, c-2));
-      }
-      if(checkJump(getSquare(r+2, c+2), getSquare(r+1, c+1), pieces[j])){
-        piecesThatCanJump.push(pieces[j]);
-        jumpSquares[r+"-"+c].push(getSquare(r+2, c+2));
-      }
-      if(checkJump(getSquare(r+2, c-2), getSquare(r+1, c-1), pieces[j])){
-        piecesThatCanJump.push(pieces[j]);
-        jumpSquares[r+"-"+c].push(getSquare(r+2, c-2));
-      }
+      checkJump(getSquare(r-2, c+2), getSquare(r-1, c+1), pieces[j]);
+      checkJump(getSquare(r-2, c-2), getSquare(r-1, c-1), pieces[j]);
+      checkJump(getSquare(r+2, c+2), getSquare(r+1, c+1), pieces[j]);
+      checkJump(getSquare(r+2, c-2), getSquare(r+1, c-1), pieces[j]);
     }
     else if(turn === 2){
-      if(checkJump(getSquare(r-2, c+2), getSquare(r-1, c+1), pieces[j])){
-        piecesThatCanJump.push(pieces[j]);
-        jumpSquares[r+"-"+c].push(getSquare(r-2, c+2));
-      }
-      if(checkJump(getSquare(r-2, c-2), getSquare(r-1, c-1), pieces[j])){
-        piecesThatCanJump.push(pieces[j]);
-        jumpSquares[r+"-"+c].push(getSquare(r-2, c-2));
-      }
+      checkJump(getSquare(r-2, c+2), getSquare(r-1, c+1), pieces[j]);
+      checkJump(getSquare(r-2, c-2), getSquare(r-1, c-1), pieces[j]);
     }
     else if(turn === 1){
-      if(checkJump(getSquare(r+2, c+2), getSquare(r+1, c+1), pieces[j])){
-        piecesThatCanJump.push(pieces[j]);
-        jumpSquares[r+"-"+c].push(getSquare(r+2, c+2));
-      }
-      if(checkJump(getSquare(r+2, c-2), getSquare(r+1, c-1), pieces[j])){
-        piecesThatCanJump.push(pieces[j]);
-        jumpSquares[r+"-"+c].push(getSquare(r+2, c-2));
-      }
+      checkJump(getSquare(r+2, c+2), getSquare(r+1, c+1), pieces[j]);
+      checkJump(getSquare(r+2, c-2), getSquare(r+1, c-1), pieces[j]);
     }
   }
   return piecesThatCanJump;
 }
-function checkJump(s1, s2, k){
-  if(s1 !== null && s1.childNodes.length === 0 && s2.firstChild !== null && s2.firstChild.style.background !== k.style.background){
-    return true;
+function checkJump(s1, s2, j){
+  var r = getRow(j.parentNode.id);
+  var c = getCol(j.parentNode.id);
+  if(s1 !== null && s1.childNodes.length === 0 && s2.firstChild !== null && s2.firstChild.style.background !== j.style.background){
+    piecesThatCanJump.push(j);
+    jumpSquares[r+"-"+c].push(s1);
   }
 }
 function moveAvailable(){
   var allPieces = document.getElementsByClassName("piece");
   var pieces = [];
-  var piecesThatCanMove = [];
+  piecesThatCanMove = [];
   moveSquares = [];
   for(var i = 0; i<allPieces.length; ++i){
     if(allPieces[i].style.background === "black" && turn === 1 || allPieces[i].style.background === "white" && turn === 2){
@@ -155,49 +136,28 @@ function moveAvailable(){
     var c = getCol(j.parentNode.id);
     moveSquares[r+"-"+c] = new Array();
     if(isKing(j)){
-      if(checkMove(getSquare(r-1, c+1))){
-        piecesThatCanMove.push(j);
-        moveSquares[r+"-"+c].push(getSquare(r-1, c+1));
-      }
-      if(checkMove(getSquare(r-1, c-1))){
-        piecesThatCanMove.push(j);
-        moveSquares[r+"-"+c].push(getSquare(r-1, c-1));
-      }
-      if(checkMove(getSquare(r+1, c+1))){
-        piecesThatCanMove.push(j);
-        moveSquares[r+"-"+c].push(getSquare(r+1, c+1));
-      }
-      if(checkMove(getSquare(r+1, c-1))){
-        piecesThatCanMove.push(j);
-        moveSquares[r+"-"+c].push(getSquare(r+1, c-1));
-      }
+      checkMove(getSquare(r-1, c+1), j);
+      checkMove(getSquare(r-1, c-1), j);
+      checkMove(getSquare(r+1, c+1), j);
+      checkMove(getSquare(r+1, c-1), j);
     }
     else if(turn === 2){
-      if(checkMove(getSquare(r-1, c+1))){
-        piecesThatCanMove.push(j);
-        moveSquares[r+"-"+c].push(getSquare(r-1, c+1));
-      }
-      if(checkMove(getSquare(r-1, c-1))){
-        piecesThatCanMove.push(j);
-        moveSquares[r+"-"+c].push(getSquare(r-1, c-1));
-      }
+      checkMove(getSquare(r-1, c+1), j);
+      checkMove(getSquare(r-1, c-1), j);
     }
     else if(turn === 1){
-      if(checkMove(getSquare(r+1, c+1))){
-        piecesThatCanMove.push(j);
-        moveSquares[r+"-"+c].push(getSquare(r+1, c+1));
-      }
-      if(checkMove(getSquare(r+1, c-1))){
-        piecesThatCanMove.push(j);
-        moveSquares[r+"-"+c].push(getSquare(r+1, c-1));
-      }
+      checkMove(getSquare(r+1, c+1), j);
+      checkMove(getSquare(r+1, c-1), j);
     }
   }
   return piecesThatCanMove;
 }
-function checkMove(s){
+function checkMove(s, j){
+  var r = getRow(j.parentNode.id);
+  var c = getCol(j.parentNode.id);
   if(s !== null && s.childNodes.length === 0){
-    return true;
+    piecesThatCanMove.push(j);
+    moveSquares[r+"-"+c].push(s);
   }
 }
 function squareClicked(){
