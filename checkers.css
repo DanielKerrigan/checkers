@@ -23,12 +23,3 @@
 .column{
   display: block;
 }
-.king{
-  width: 30px;
-  height: 30px;
-  border-radius: 100%;
-  border: 2px solid #FFD700;
-  position: absolute;
-  margin: 5px 5px;
-  z-index: 15;
-}

@@ -221,9 +221,7 @@ function makeMove(){
   var row = getRow(squareSelected.id);
   var color = pieceSelected.style.background;
   if((row === 0 && color === "white") || (row === 7 && color === "black")){
-    var king=document.createElement("div");
-    king.className = "king";
-    pieceSelected.appendChild(king);
+    pieceSelected.style.boxShadow = "inset 0 0 1em gold";
   }
   pieceSelected = null;
 }
@@ -261,7 +259,7 @@ function jumpPiece(id){
   }
 }
 function isKing(p){
-  return p.childNodes.length !== 0;
+  return p.style.boxShadow !== "";
 }
 function gameOver(winner){
   alert(winner+" wins!");
