@@ -177,7 +177,7 @@ function checkMove(s, j){
 // this function is called when a square is clicked
 function squareClicked(){
   // if a piece is selected, if the squareSelected is not the same square that the pieceSelcted is on,
-  // and if the square clicked does not have a piece on it, then select this square 
+  // and if the square clicked does not have a piece on it, then select this square
   if(pieceSelected !== null && this !== pieceSelected.parentNode && this.childNodes.length === 0){
     if(canJump){
       if(jumpSquares[pieceSelected.parentNode.id].indexOf(this) !== -1){
@@ -218,6 +218,7 @@ function getCol(sqID){
 function getSquare(row, col){
   return document.getElementById(row+"-"+col);
 }
+// move the pieceSelected from its current square to squareSelected
 function makeMove(){
   var parent = pieceSelected.parentNode;
   pieceSelected.style.border = "0";
@@ -240,11 +241,14 @@ function makeMove(){
   }
   var row = getRow(squareSelected.id);
   var color = pieceSelected.style.background;
+  //If a piece makes it to the opposite side of the board, make it a king.
   if((row === 0 && color === "white") || (row === 7 && color === "black")){
     pieceSelected.style.boxShadow = "inset 0 0 1em gold";
   }
   pieceSelected = null;
 }
+// move the pieceSelected from its current square to squareSelected
+// remove the piece that pieceSelected jumped over.
 function jumpPiece(id){
   var jumpedSquare = document.getElementById(id);
   var jumpedPiece = jumpedSquare.firstChild;
@@ -264,6 +268,7 @@ function jumpPiece(id){
       gameOver("Black");
     }
   }
+  // the if...else below is to check if the piece can make another jump
   turn = currentTurn;
   if(jumpAvailable().indexOf(pieceMoved) !== -1){
     pieceSelected = pieceMoved;
