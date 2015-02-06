@@ -1,18 +1,23 @@
-var pieceSelected = null;
-var squareSelected = null;
-var canJump = false;
-var jumpSquares = new Array();
-var moveSquares = new Array();
-var piecesThatCanMove = new Array();
-var piecesThatCanJump = new Array();
-var parent;
-var turn = 1;
-var blackPiecesCount = 12;
+/*Daniel Kerrigan
+  checkers.js
+  */
+var pieceSelected = null;// The piece that the player selected
+var squareSelected = null;// The square that the player selected to move to
+var canJump = false;// Can a piece make a jump?
+var jumpSquares = new Array();//Squares that pieces can jump to
+var moveSquares = new Array();//Squares that pieces can move to
+var piecesThatCanMove = new Array();//Pieces that can jump another piece
+var piecesThatCanJump = new Array();//Pieces that can make a move
+var parent;//The parent of a piece, which is the square the piece is on
+var turn = 1;// turn 1 represents black, turn 2 represents white
+var blackPiecesCount = 12;// Game starts with 12 pieces of each color
 var whitePiecesCount = 12;
+// On load, create the board
 window.onload = function(){
   var container=document.getElementById("container");
   createBoard();
 }
+// This function creates the checkerboard and pieces set up for a new game
 function createBoard(){
   for(var i=0; i<8;i++){
     var col=document.createElement("div");
@@ -26,10 +31,10 @@ function createBoard(){
       col.appendChild(square);
       square.id = i+"-"+j;
       if((i%2 == 1 && j%2 == 1)||(i%2 == 0 && j%2 == 0)){
-        square.style.background = "#F0DC82";
+        square.style.background = "#F0DC82";//tan color
       }
       else{
-        square.style.background = "#984928";
+        square.style.background = "#984928";//brown color
         if(i<3){
           piece.style.background = "black";
           square.appendChild(piece);
@@ -41,6 +46,7 @@ function createBoard(){
       }
     }
   }
+  //Add event listeners to both the pieces and the squares that pieces can be on
   var allPieces=document.getElementsByClassName("piece");
   for(var i=0; i<allPieces.length; ++i){
     allPieces[i].addEventListener("click", pieceClicked);
@@ -52,12 +58,14 @@ function createBoard(){
     }
   }
 }
+// this method is called when a piece is clicked
 function pieceClicked(){
-  var piecesThatCanJump = jumpAvailable();
-  var piecesThatCanMove = moveAvailable();
+  var piecesThatCanJump = jumpAvailable(); //array of pieces that can make a jump
+  var piecesThatCanMove = moveAvailable(); //array of pieces that can make a move
   canJump = false;
   if(piecesThatCanJump.length === 0){
     if(piecesThatCanMove.indexOf(this) !== -1){
+      // If no pieces can jump and the piece clicked can make a move, then highlight it
       highlightPiece(this);
     }
   }
@@ -68,6 +76,7 @@ function pieceClicked(){
     }
   }
 }
+// Highlight piece p and de-highlight any other pieces highlighted
 function highlightPiece(p){
   var pieceColor = p.style.background;
   if(turn === 1 && pieceColor === "black" || turn === 2 && pieceColor === "white"){
@@ -82,37 +91,40 @@ function highlightPiece(p){
     }
   }
 }
+// this function returns an array of pieces that can make a jump
 function jumpAvailable(){
   var allPieces = document.getElementsByClassName("piece");
-  var pieces = [];
+  var pieces = []; // will store all pieces of one color, depending on the turn
   piecesThatCanJump = [];
-  jumpSquares = [];
+  jumpSquares = []; // the squares that the pieces can jump to
   for(var i = 0; i<allPieces.length; ++i){
     if(allPieces[i].style.background === "black" && turn === 1 || allPieces[i].style.background === "white" && turn === 2){
       pieces.push(allPieces[i]);
     }
   }
   for(var j = 0; j<pieces.length; ++j){
-    var r = getRow(pieces[j].parentNode.id);
-    var c = getCol(pieces[j].parentNode.id);
+    var r = getRow(pieces[j].parentNode.id);//row of the piece
+    var c = getCol(pieces[j].parentNode.id);//column of the piece
     jumpSquares[r+"-"+c] = new Array();
-    if(isKing(pieces[j])){
+    if(isKing(pieces[j])){//if the piece is a king, check if it can make any jumps up or down the board
       checkJump(getSquare(r-2, c+2), getSquare(r-1, c+1), pieces[j]);
       checkJump(getSquare(r-2, c-2), getSquare(r-1, c-1), pieces[j]);
       checkJump(getSquare(r+2, c+2), getSquare(r+1, c+1), pieces[j]);
       checkJump(getSquare(r+2, c-2), getSquare(r+1, c-1), pieces[j]);
     }
-    else if(turn === 2){
+    else if(turn === 2){//if it's white's turn, then check if it can make any jumps "up" the board
       checkJump(getSquare(r-2, c+2), getSquare(r-1, c+1), pieces[j]);
       checkJump(getSquare(r-2, c-2), getSquare(r-1, c-1), pieces[j]);
     }
-    else if(turn === 1){
+    else if(turn === 1){//if it's black's turn, then check if it can make any jumps "down" the board
       checkJump(getSquare(r+2, c+2), getSquare(r+1, c+1), pieces[j]);
       checkJump(getSquare(r+2, c-2), getSquare(r+1, c-1), pieces[j]);
     }
   }
   return piecesThatCanJump;
 }
+// if piece j can jump over a piece on square s2 onto square s1, then add piece j
+// to the array piecesThatCanJump and add the square s1 to jumpSquares
 function checkJump(s1, s2, j){
   var r = getRow(j.parentNode.id);
   var c = getCol(j.parentNode.id);
@@ -121,37 +133,39 @@ function checkJump(s1, s2, j){
     jumpSquares[r+"-"+c].push(s1);
   }
 }
+// this function returns an array of pieces that can make a move (not a jump)
 function moveAvailable(){
   var allPieces = document.getElementsByClassName("piece");
   var pieces = [];
   piecesThatCanMove = [];
-  moveSquares = [];
+  moveSquares = [];// squares that the pieces can move to
   for(var i = 0; i<allPieces.length; ++i){
     if(allPieces[i].style.background === "black" && turn === 1 || allPieces[i].style.background === "white" && turn === 2){
       pieces.push(allPieces[i]);
     }
   }
   for(var j of pieces){
-    var r = getRow(j.parentNode.id);
-    var c = getCol(j.parentNode.id);
-    moveSquares[r+"-"+c] = new Array();
-    if(isKing(j)){
+    var r = getRow(j.parentNode.id);// row of the piece
+    var c = getCol(j.parentNode.id);// square of the piece
+    moveSquares[r+"-"+c] = new Array();// squares that the pieces can move to
+    if(isKing(j)){// if the piece is a king, check if it can make any moves "up" or "down" the board
       checkMove(getSquare(r-1, c+1), j);
       checkMove(getSquare(r-1, c-1), j);
       checkMove(getSquare(r+1, c+1), j);
       checkMove(getSquare(r+1, c-1), j);
     }
-    else if(turn === 2){
+    else if(turn === 2){// if the piece is white, check if it can make any moves "up" the board
       checkMove(getSquare(r-1, c+1), j);
       checkMove(getSquare(r-1, c-1), j);
     }
-    else if(turn === 1){
+    else if(turn === 1){// if tge piece is black, check if it can make any moves "down" the board
       checkMove(getSquare(r+1, c+1), j);
       checkMove(getSquare(r+1, c-1), j);
     }
   }
   return piecesThatCanMove;
 }
+// if piece j can to square s, then add j to piecesThatCanMove and add s to moveSquares
 function checkMove(s, j){
   var r = getRow(j.parentNode.id);
   var c = getCol(j.parentNode.id);
@@ -160,7 +174,10 @@ function checkMove(s, j){
     moveSquares[r+"-"+c].push(s);
   }
 }
+// this function is called when a square is clicked
 function squareClicked(){
+  // if a piece is selected, if the squareSelected is not the same square that the pieceSelcted is on,
+  // and if the square clicked does not have a piece on it, then select this square 
   if(pieceSelected !== null && this !== pieceSelected.parentNode && this.childNodes.length === 0){
     if(canJump){
       if(jumpSquares[pieceSelected.parentNode.id].indexOf(this) !== -1){
@@ -185,16 +202,19 @@ function squareClicked(){
     }
   }
 }
+// return the row of a square as a number
 function getRow(sqID){
   var rStr = sqID.charAt(0);
   var rInt = +rStr;
   return rInt;
 }
+// return the column of a square as a number
 function getCol(sqID){
   var cStr = sqID.charAt(2);
   var cInt = +cStr;
   return cInt;
 }
+// given a row and column, return the square at that position
 function getSquare(row, col){
   return document.getElementById(row+"-"+col);
 }
@@ -258,13 +278,16 @@ function jumpPiece(id){
     }
   }
 }
+// returns whether or not the piece is a king
 function isKing(p){
   return p.style.boxShadow !== "";
 }
+// when the game is over, alert who won and start a new game
 function gameOver(winner){
   alert(winner+" wins!");
   newGame();
 }
+// remove everything from the container, reset variable values, and create a new board.
 function newGame(){
   while(container.firstChild){
     container.removeChild(container.firstChild);
