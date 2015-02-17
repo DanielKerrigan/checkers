@@ -226,12 +226,17 @@ function makeMove(){
   parent.removeChild(pieceSelected);
   squareSelected.appendChild(pieceSelected);
 
+  //If a piece makes it to the opposite side of the board, make it a king.
+  if((row === 0 && color === "white") || (row === 7 && color === "black")){
+    pieceSelected.style.boxShadow = "inset 0 0 1em gold";
+  }
+
   if(moveAvailable().length === 0 && jumpAvailable().length === 0){
     if(turn === 1){
-      gameOver("Black");
+      gameOver("White");
     }
     else{
-      gameOver("White");
+      gameOver("Black");
     }
   }
 
@@ -242,10 +247,6 @@ function makeMove(){
   }
   var row = getRow(squareSelected.id);
   var color = pieceSelected.style.background;
-  //If a piece makes it to the opposite side of the board, make it a king.
-  if((row === 0 && color === "white") || (row === 7 && color === "black")){
-    pieceSelected.style.boxShadow = "inset 0 0 1em gold";
-  }
   pieceSelected = null;
 }
 // move the pieceSelected from its current square to squareSelected
