@@ -63,6 +63,7 @@ function pieceClicked(){
   var piecesThatCanJump = jumpAvailable(); //array of pieces that can make a jump
   var piecesThatCanMove = moveAvailable(); //array of pieces that can make a move
   canJump = false;
+  // addBorder(this);
   if(piecesThatCanJump.length === 0){
     if(piecesThatCanMove.indexOf(this) !== -1){
       // If no pieces can jump and the piece clicked can make a move, then highlight it
@@ -145,8 +146,8 @@ function moveAvailable(){
     }
   }
   for(var j = 0; j<pieces.length; ++j){
-    var r = getRow(j.parentNode.id);// row of the piece
-    var c = getCol(j.parentNode.id);// square of the piece
+    var r = getRow(pieces[j].parentNode.id);// row of the piece
+    var c = getCol(pieces[j].parentNode.id);// square of the piece
     moveSquares[r+"-"+c] = [];// squares that the pieces can move to
     if(isKing(pieces[j])){// if the piece is a king, check if it can make any moves "up" or "down" the board
       checkMove(getSquare(r-1, c+1), pieces[j]);
