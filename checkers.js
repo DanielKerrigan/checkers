@@ -222,6 +222,8 @@ function getSquare(row, col){
 // move the pieceSelected from its current square to squareSelected
 function makeMove(){
   var parent = pieceSelected.parentNode;
+  var row = getRow(squareSelected.id);
+  var color = pieceSelected.style.background;
   pieceSelected.style.border = "0";
   parent.removeChild(pieceSelected);
   squareSelected.appendChild(pieceSelected);
@@ -245,8 +247,7 @@ function makeMove(){
   }else{
     turn = 1;
   }
-  var row = getRow(squareSelected.id);
-  var color = pieceSelected.style.background;
+
   pieceSelected = null;
 }
 // move the pieceSelected from its current square to squareSelected
